@@ -1,0 +1,192 @@
+#L298N:
+# ENA -> GPIO19
+# IN1 -> GPIO7
+# IN2 -> GPIO11
+# IN3 -> GPIO13
+# IN4 -> GPIO15
+# ENB -> GPIO21
+# 
+# +12V -> "NO" (normal open) of Relay Module
+# GND (both)_ _|-> -4.5v battery terminal
+#            \&|-> GPIO6
+# 
+# OUT1 -> port DC motor negative wire
+# OUT2 -> port DC motor positive wire
+# 
+# OUT3 -> starbird DC motor positive wire
+# OUT4 -> starbird DC motor negative wire
+#
+#Servo ground (brown) -> GPIO20
+#Servo V+ (red) -> GPIO17
+#Servo PWM (orange) -> GPIO18
+
+#Relay Module
+#DC+ -> GPIO2
+#DC- -> GPIO14
+#IN -> GPIO3
+#NO -> LN298N +12V
+#COM -> +4.5v battery terminal
+
+import pygame
+import RPi.GPIO as GPIO
+import time
+from pygame import mixer
+from time import sleep
+import sys
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(7,GPIO.OUT)
+GPIO.setup(11,GPIO.OUT)
+GPIO.setup(13,GPIO.OUT)
+GPIO.setup(15,GPIO.OUT)
+GPIO.setup(19,GPIO.OUT)
+GPIO.setup(21,GPIO.OUT)
+GPIO.setup(3, GPIO.OUT) # -> "IN" Relay Module 
+GPIO.output(3, GPIO.HIGH)
+GPIO.output(7,False)
+GPIO.output(11,False)
+GPIO.output(13,False)
+GPIO.output(15,False)
+GPIO.output(19,True)
+GPIO.output(21,True)
+def stop():
+    GPIO.output(7,0)
+    GPIO.output(11,0)
+    GPIO.output(13,0)
+    GPIO.output(15,0)
+def key_up():
+    GPIO.output(7,False)
+    GPIO.output(11,True)
+    GPIO.output(13,False)
+    GPIO.output(15,True)
+def key_slow():
+    GPIO.output(7,False)
+    GPIO.output(11,GPIO.LOW)
+    GPIO.output(13,False)
+    GPIO.output(15,GPIO.LOW)    
+def key_down():
+    GPIO.output(7,True)
+    GPIO.output(11,False)
+    GPIO.output(13,True)
+    GPIO.output(15,False)
+def key_left():
+    GPIO.output(7,True)
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(15,True)
+def key_right():
+    GPIO.output(7,False)
+    GPIO.output(11,True)
+    GPIO.output(13,True)
+    GPIO.output(15,False)
+GPIO.setup(18,GPIO.OUT)
+servo1 = GPIO.PWM(18,50)
+servo1.start(0)
+def key_p(): #press p to rock the servo, then release 
+    servo1.ChangeDutyCycle(11)
+def key_o(): #press o to toggle the servo, then press p to release
+    servo1.ChangeDutyCycle(11)
+def recenter():
+    servo1.ChangeDutyCycle(8)
+    time.sleep(0.5)
+    servo1.ChangeDutyCycle(0)
+def key_more():
+    servo1.ChangeDutyCycle(12)
+click_rect  = pygame.Rect(250, 0, 60, 60)
+click_rect2  = pygame.Rect(310, 60, 60, 60)
+click_rect3  = pygame.Rect(190, 60, 60, 60)
+click_rect4  = pygame.Rect(250, 120, 60, 60)
+click_rectp  = pygame.Rect(0, 0, 60, 60)
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((500, 800))
+    pygame.draw.rect(screen, (0, 128, 255), pygame.Rect(250, 0, 60, 60))
+    pygame.draw.rect(screen, (128, 0, 128), pygame.Rect(310, 60, 60, 60))
+    pygame.draw.rect(screen, (128, 128, 255), pygame.Rect(190, 60, 60, 60))
+    pygame.draw.rect(screen, (128, 128, 0), pygame.Rect(250, 120, 60, 60))
+    pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(0, 0, 60, 60)) 
+    pygame.display.flip()
+    while True:      
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                GPIO.cleanup()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    GPIO.cleanup()
+                    sys.exit()
+                if event.key == pygame.K_UP:
+                    key_up()
+                if event.key == pygame.K_DOWN:
+                    key_down()
+                if event.key == pygame.K_LEFT:
+                    key_left()
+                if event.key == pygame.K_RIGHT:
+                    key_right()
+                if event.key == pygame.K_p:
+                    key_p()
+                    servo1.ChangeDutyCycle(0)
+                if event.key == pygame.K_o:
+                    key_o()
+#                if event.key == pygame.K_i:
+#                    key_slow()
+                                        
+            if event.type == pygame.KEYUP:
+               if event.key == pygame.K_UP:
+                   stop()
+               if event.key == pygame.K_LEFT:
+                   stop()
+               if event.key == pygame.K_RIGHT:
+                   stop()
+               if event.key == pygame.K_DOWN:
+                   stop()
+               if event.key == pygame.K_i:
+                   stop()                   
+               if event.key == pygame.K_p:
+                   recenter()
+                   servo1.ChangeDutyCycle(0)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_position = pygame.mouse.get_pos()
+                if (click_rect.collidepoint(mouse_position)):
+                    if event.button == 1: 
+                        key_up()                        
+                if (click_rect2.collidepoint(mouse_position)):
+                    if event.button == 1:
+                        key_right()                        
+                if (click_rect3.collidepoint(mouse_position)):
+                    if event.button == 1: 
+                        key_left()
+                if (click_rect4.collidepoint(mouse_position)):
+                    if event.button == 1: 
+                        key_down()
+                if (click_rectp.collidepoint(mouse_position)):
+                    if event.button == 1: #left click to rock the servo, then release 
+                        key_p()
+                if (click_rectp.collidepoint(mouse_position)):
+                    if event.button == 2: #right click to toggle the servo, then left click to release 
+                        key_more()                     
+                if (click_rectp.collidepoint(mouse_position)):
+                    if event.button == 3: #right click to toggle the servo, then left click to release 
+                        key_p()                        
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    if (click_rect.collidepoint(mouse_position)):
+                        stop()           
+                if event.button == 1:
+                    if (click_rectp.collidepoint(mouse_position)):
+                        recenter()
+                if event.button == 2:
+                    if (click_rectp.collidepoint(mouse_position)):
+                        recenter()
+                if event.button == 1:
+                    if (click_rect2.collidepoint(mouse_position)):
+                        stop()
+                if event.button == 1:
+                    if (click_rect3.collidepoint(mouse_position)):
+                        stop()                    
+                if event.button == 1:
+                    if (click_rect4.collidepoint(mouse_position)):
+                        stop()                          
+                elif event.button == 3:
+                    stop()
+main()
