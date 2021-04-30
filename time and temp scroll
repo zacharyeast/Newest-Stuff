@@ -1,0 +1,42 @@
+from sense_hat import SenseHat
+import time
+import datetime
+print(time.strftime("%I:%M"))
+
+sense = SenseHat()
+
+temp1 = sense.get_temperature_from_pressure()
+#print("Temperature: %s C" % temp1)
+
+
+
+temp2 = sense.get_temperature_from_humidity()
+#print("Temperature: %s C" % temp2)
+
+average = ((temp1+temp2)/2)
+
+print("Room Temp:",average*(9/5)+32, "Fahrenheit")
+roomtemp = average*(9/5)+32
+print(roomtemp)
+roomtempstr = str(roomtemp)
+roomtempsub = roomtempstr[0:4]
+print(roomtempsub)
+while True:
+    
+    from gpiozero import CPUTemperature
+    
+    sense.clear()
+    sense.rotation = 270
+
+    white = (69, 69, 69)
+    str_time = time.strftime("%I:%M")
+    sense.show_message(str_time, text_colour=white, scroll_speed=0.055)
+#    sense.show_message("Hat:", text_colour=white, scroll_speed=0.055)
+    sense.show_message(roomtempsub, text_colour=white, scroll_speed=0.055)
+    
+    cpu = CPUTemperature()
+    cpus = str(cpu)
+    cpusub = cpus[44:48]
+#    sense.show_message("CPU:", text_colour=white, scroll_speed=0.055)
+    sense.show_message(cpusub, text_colour=white, scroll_speed=0.055)
+
