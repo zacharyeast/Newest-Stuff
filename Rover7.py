@@ -29,7 +29,7 @@
 import pygame
 import RPi.GPIO as GPIO
 import time
-from pygame import mixer
+#from pygame import mixer
 from time import sleep
 import sys
 from sys import exit
@@ -146,12 +146,17 @@ click_rectslowforward = pygame.Rect(160, 40, 60, 60) #slow forward
 click_rectslowreverse = pygame.Rect(160, 160, 60, 60) #slow reverse
 click_rectroveforward = pygame.Rect(0, 320, 60, 60) #rove forward
 click_rectendrove = pygame.Rect(0, 380, 60, 60) #end rove forward
+pygame.font.init()
+textfont=pygame.font.SysFont("hello", 50)
 pygame.init()
 clock=pygame.time.Clock()
+FPS=30
+safe_distance = 15
 # test_font = pygame.font.Font(None, 50)
 # text_surface = test_font.render('MyGame',False,(200,200,200))
 # test_surface = pygame.Surface((100,100))
 # test_surface.fill((100,250,100))
+
 def main():
     sleep(0.01)
     stop()
@@ -173,8 +178,12 @@ def main():
     pygame.draw.rect(screen, (130, 35, 220), pygame.Rect(0, 100, 60, 60)) # turn on
     pygame.draw.rect(screen, (135, 255, 210), pygame.Rect(0, 320, 60, 60)) # rove forward
     pygame.draw.rect(screen, (135, 25, 210), pygame.Rect(0, 380, 60, 60)) # end rove forward   
+
     pygame.display.flip()
-    while True:
+
+
+
+    while True:          
         sleep(0.001)
         stop()
         sleep(0.001)
@@ -192,13 +201,25 @@ def main():
             pulse_duration = pulse_end_time - pulse_start_time
             distance = round(pulse_duration * 17150, 2)
             print("Distance:",distance,"cm")
-            clock.tick(60)
-            if distance <= 10:
+            distance3 = str(distance)
+            
+            texttbd=textfont.render(distance3,1,(250,250,250))
+
+            screen.blit(texttbd,(1,550))    
+            pygame.display.flip()            
+#            clock.tick(FPS)
+            if distance <= safe_distance:
                 print("OBJECT DETECTED AT THE FORWARD")
                 stop()
                 sleep(0.1)
                 main()
-                clock.tick(60)
+                distance4 = "Object Detected!"
+                
+                texttbd2=textfont.render(distance4,1,(250,250,250))
+
+                screen.blit(texttbd2,(1,550))    
+                pygame.display.flip()                 
+                clock.tick(FPS)
             
         def rover_forward_back_loop():
             counter = 1
@@ -226,8 +247,8 @@ def main():
                     sleep(0.01)
                     print("Distance:",distance,"cm")
                     sleep(0.01)
-                    clock.tick(60)
-                    if distance <= 10:
+                    clock.tick(FPS)
+                    if distance <= safe_distance:
                         print("OBJECT DETECTED AT THE FORWARD")
                         stop()
                         sleep(0.5)
@@ -236,7 +257,7 @@ def main():
                         stop()
                         counter = counter + 1
                         sleep(0.01)
-                        clock.tick(60)
+                        clock.tick(FPS)
                         continue
                 elif (counter % 2) ==0:
                     sleep(0.01)
@@ -256,7 +277,7 @@ def main():
                     sleep(0.01)
                     print("Distance:",distance,"cm")
                     
-                    if distance <= 10:
+                    if distance <= safe_distance:
                         print("OBJECT DETECTED AT THE FORWARD")
                         stop()
                         sleep(0.5)
@@ -265,9 +286,9 @@ def main():
                         stop()
                         counter = counter + 1
                         sleep(0.01)
-                        clock.tick(60)
+                        clock.tick(FPS)
                         continue
-                clock.tick(60)
+                clock.tick(FPS)
                 for event in pygame.event.get():
                     sleep(0.01)
                     if event.type == pygame.KEYUP:
@@ -282,8 +303,10 @@ def main():
             key_up()
             while True:
                 rover_ultra_sense()
-                sleep(0.001)
-                clock.tick(60)
+                sleep(0.01)
+                
+                clock.tick(FPS)
+                
                 for event in pygame.event.get():
                     sleep(0.01)
                     if event.type == pygame.KEYUP:
@@ -293,7 +316,7 @@ def main():
                             forward = 0
                             stop()
                             sleep(0.001)
-                            clock.tick(60)
+                            clock.tick(FPS)
                             main()
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         mouse_position = pygame.mouse.get_pos()                    
@@ -303,19 +326,24 @@ def main():
                                 forward = 0
                                 stop()
                                 sleep(0.001)
-                                clock.tick(60)
+                                clock.tick(FPS)
                                 main()                            
                     if event.type == pygame.KEYDOWN:
                        if event.key == pygame.K_w:
                            stop()
                            sleep(0.001)
-                           main()                              
+                           main()
+                           
+                          
         def rover_reverse():
             key_down()
+            sleep(0.01)
+                
+            clock.tick(FPS)
             while True:
                 rover_ultra_sense()
                 sleep(0.001)
-                clock.tick(60)
+                clock.tick(FPS)
                 for event in pygame.event.get():
                     sleep(0.01)
                     if event.type == pygame.KEYUP:
@@ -325,7 +353,7 @@ def main():
                             forward = 0
                             stop()
                             sleep(0.001)
-                            clock.tick(60)
+                            clock.tick(FPS)
                             main()                        
                     if event.type == pygame.KEYDOWN:
                        if event.key == pygame.K_q:
@@ -345,14 +373,27 @@ def main():
             pulse_duration = pulse_end_time - pulse_start_time
             distance = round(pulse_duration * 17150, 2)
             print("Distance:",distance,"cm")
-            if distance <= 10:
+            distance2 = str(distance)
+            
+            texttbd=textfont.render(distance2,1,(250,250,250))
+
+            screen.blit(texttbd,(1,550))
+            sleep(0.01)
+            pygame.display.flip()
+            if distance <= safe_distance:
                 print("OBJECT DETECTED AT THE FORWARD")
                 key_down()
                 sleep(0.8)
                 stop()
                 sleep(0.1)
-                clock.tick(60)
+                texttbd=textfont.render("OBJECT DETECTED AT THE FORWARD",1,(250,250,250))
+
+                screen.blit(texttbd,(0,550))
+                pygame.display.flip()
+                clock.tick(FPS)
+
         for event in pygame.event.get():
+
             turn_on()
             stop()
             sleep(0.001)
@@ -373,7 +414,7 @@ def main():
                     sleep(0.001)
                     while True:
                         ultra_sense()
-                        clock.tick(60)
+                        clock.tick(FPS)
                         for event in pygame.event.get():
                             if event.type == pygame.KEYUP:
                                if event.key == pygame.K_UP:
@@ -385,14 +426,14 @@ def main():
                     key_down()
                     while True:
                         ultra_sense()
-                        clock.tick(60)
+                        clock.tick(FPS)
                         for event in pygame.event.get():
                             if event.type == pygame.KEYUP:
                                if event.key == pygame.K_DOWN:
                                    stop()
                                    sleep(0.001)
                                    main()
-                                   clock.tick(60)
+                                   clock.tick(FPS)
                 if event.key == pygame.K_LEFT:
                     key_left2()
                     sleep(0.01)
@@ -400,7 +441,7 @@ def main():
                         sleep(0.001)
                         ultra_sense()
                         sleep(0.001)
-                        clock.tick(60)
+                        clock.tick(FPS)
                         for event in pygame.event.get():
                             sleep(0.001)
                             if event.type == pygame.KEYUP:
@@ -410,7 +451,7 @@ def main():
                                    stop()
                                    sleep(0.001)
                                    main()
-                                   clock.tick(60)
+                                   clock.tick(FPS)
                                    sleep(0.01)
                 if event.key == pygame.K_RIGHT:
                     key_right2()
@@ -418,7 +459,7 @@ def main():
                         sleep(0.01)
                         ultra_sense()
                         sleep(0.01)
-                        clock.tick(60)
+                        clock.tick(FPS)
                         for event in pygame.event.get():
                             sleep(0.01)
                             if event.type == pygame.KEYUP:
@@ -427,7 +468,7 @@ def main():
                                     sleep(0.01)
                                     stop()
                                     sleep(0.01)
-                                    clock.tick(60)
+                                    clock.tick(FPS)
                                     main()
                 if event.key == pygame.K_p:
                     key_more()
@@ -844,5 +885,6 @@ def main():
                     main()
                 
 #        stop()
-        clock.tick(60)
+
+        clock.tick(FPS)
 main()
